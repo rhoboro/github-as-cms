@@ -11,6 +11,8 @@ jobs:
       - run: cat ${GITHUB_EVENT_PATH}
       - name: checkout
         uses: actions/checkout@v2.3.1
+      - name: install dependencies
+        run: pip3 install bleach
       - name: Set env
         run: |
           echo "::set-env name=FILE_NAME::_posts/$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.created_at' | sed 's/T.*$//g')-$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.number').md"
@@ -19,7 +21,7 @@ jobs:
           echo "::set-env name=PAGE_TAGS::$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.labels[].name' | xargs)"
       - name: Generate content
         run: |
-          cat ${GITHUB_EVENT_PATH} | jq -r '.issue.body' > ${FILE_NAME}
+          cat ${GITHUB_EVENT_PATH} | jq -r '.issue.body' | python3 -c 'import bleach, sys; sys.stdout.write(bleach.clean(sys.stdin.read()))' > ${FILE_NAME}
           sed -i '1i ---' ${FILE_NAME}
           sed -i '1i tags: '"${PAGE_TAGS}"'' ${FILE_NAME}
           sed -i '1i date: '"${PAGE_DATE}"'' ${FILE_NAME}
