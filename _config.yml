@@ -1,12 +1,10 @@
-title: GitHub for CMS
+title: GitHub as CMS
 email: rhoboro@gmail.com
 description: sample page for using github actions
-baseurl: "/github-actions" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: "/github-as-cms"
+url: ""
 twitter_username: rhoboro
 github_username:  rhoboro
-
-# Build settings
 theme: minima
 plugins:
   - jekyll-feed
