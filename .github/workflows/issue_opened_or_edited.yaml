@@ -15,10 +15,10 @@ jobs:
         run: pip3 install bleach
       - name: Set env
         run: |
-          echo "::set-env name=FILE_NAME::_posts/$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.created_at' | sed 's/T.*$//g')-$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.number').md"
-          echo "::set-env name=PAGE_TITLE::$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.title')"
-          echo "::set-env name=PAGE_DATE::$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.created_at' | sed 's/T/ /g' | sed 's/Z$//g')"
-          echo "::set-env name=PAGE_TAGS::$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.labels[].name' | xargs)"
+          echo "FILE_NAME=_posts/$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.created_at' | sed 's/T.*$//g')-$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.number').md" >> "$GITHUB_OUTPUT"
+          echo "PAGE_TITLE=$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.title')" >> "$GITHUB_OUTPUT"
+          echo "PAGE_DATE=$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.created_at' | sed 's/T/ /g' | sed 's/Z$//g')" >> "$GITHUB_OUTPUT"
+          echo "PAGE_TAGS=$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.labels[].name' | xargs)" >> "$GITHUB_OUTPUT"
       - name: Generate content
         run: |
           cat ${GITHUB_EVENT_PATH} | jq -r '.issue.body' | python3 -c 'import bleach, sys; sys.stdout.write(bleach.clean(sys.stdin.read()))' > ${FILE_NAME}
