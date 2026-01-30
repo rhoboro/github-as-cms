@@ -23,7 +23,7 @@ jobs:
       - name: Generate content
         run: |
           cat ${GITHUB_EVENT_PATH} | jq -r '.issue.body' | python3 -c 'import bleach, sys; sys.stdout.write(bleach.clean(sys.stdin.read()))' > ${{steps.set-env.outputs.FILE_NAME}}
-          sed -i '1i ---' ${steps.set-env.outputs.FILE_NAME}
+          sed -i '1i ---' ${{steps.set-env.outputs.FILE_NAME}}
           sed -i '1i tags: '"${{steps.set-env.outputs.PAGE_TAGS}}"'' ${{steps.set-env.outputs.FILE_NAME}}
           sed -i '1i date: '"${{steps.set-env.outputs.PAGE_DATE}}"'' ${{steps.set-env.outputs.FILE_NAME}}
           sed -i '1i title: '"${{steps.set-env.outputs.PAGE_TITLE}}"'' ${{steps.set-env.outputs.FILE_NAME}}

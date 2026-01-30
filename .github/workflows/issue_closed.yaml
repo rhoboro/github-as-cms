@@ -12,17 +12,18 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2.3.1
       - name: Set env
+        id: set-env
         run: |
-          echo "::set-env name=FILE_NAME::_posts/$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.created_at' | sed 's/T.*$//g')-$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.number').md"
+          echo "FILE_NAME=_posts/$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.created_at' | sed 's/T.*$//g')-$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.number').md" >> "$GITHUB_OUTPUT"
       - name: Delete a post
         run: |
-          rm -rf ${FILE_NAME}
+          rm -rf ${{steps.set-env.outputs.FILE_NAME}}
       - name: Commit files
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git pull
-          git add ${FILE_NAME}
+          git add ${{steps.set-env.outputs.FILE_NAME}}
           git commit -m "Add changes" -a
       - name: Push changes
         uses: ad-m/github-push-action@master
