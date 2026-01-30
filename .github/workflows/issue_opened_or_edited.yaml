@@ -14,6 +14,7 @@ jobs:
       - name: install dependencies
         run: pip3 install bleach
       - name: Set env
+        id: set-env
         run: |
           echo "FILE_NAME=_posts/$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.created_at' | sed 's/T.*$//g')-$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.number').md" >> "$GITHUB_OUTPUT"
           echo "PAGE_TITLE=$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.title')" >> "$GITHUB_OUTPUT"
@@ -21,17 +22,17 @@ jobs:
           echo "PAGE_TAGS=$(cat ${GITHUB_EVENT_PATH} | jq -r '.issue.labels[].name' | xargs)" >> "$GITHUB_OUTPUT"
       - name: Generate content
         run: |
-          cat ${GITHUB_EVENT_PATH} | jq -r '.issue.body' | python3 -c 'import bleach, sys; sys.stdout.write(bleach.clean(sys.stdin.read()))' > ${FILE_NAME}
-          sed -i '1i ---' ${FILE_NAME}
-          sed -i '1i tags: '"${PAGE_TAGS}"'' ${FILE_NAME}
-          sed -i '1i date: '"${PAGE_DATE}"'' ${FILE_NAME}
-          sed -i '1i title: '"${PAGE_TITLE}"'' ${FILE_NAME}
-          sed -i '1i ---' ${FILE_NAME}
+          cat ${GITHUB_EVENT_PATH} | jq -r '.issue.body' | python3 -c 'import bleach, sys; sys.stdout.write(bleach.clean(sys.stdin.read()))' > ${{steps.set-env.outputs.FILE_NAME}}
+          sed -i '1i ---' ${steps.set-env.outputs.FILE_NAME}
+          sed -i '1i tags: '"${{steps.set-env.outputs.PAGE_TAGS}}"'' ${{steps.set-env.outputs.FILE_NAME}}
+          sed -i '1i date: '"${{steps.set-env.outputs.PAGE_DATE}}"'' ${{steps.set-env.outputs.FILE_NAME}}
+          sed -i '1i title: '"${{steps.set-env.outputs.PAGE_TITLE}}"'' ${{steps.set-env.outputs.FILE_NAME}}
+          sed -i '1i ---' ${{steps.set-env.outputs.FILE_NAME}}
       - name: Commit files
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add ${FILE_NAME}
+          git add ${{steps.set-env.outputs.FILE_NAME}}
           git commit -m "Add changes" -a
       - name: Push changes
         uses: ad-m/github-push-action@master
